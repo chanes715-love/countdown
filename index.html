@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日曆版倒數計時器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: transparent;
+            font-family: 'Noto Serif TC', serif;
+        }
+
+        /* 隱藏捲軸 */
+        ::-webkit-scrollbar { display: none; }
+
+        /* 微微的紙張陰影與內陰影效果 */
+        .paper-shadow {
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                0 2px 4px -1px rgba(0, 0, 0, 0.06),
+                inset 0 -2px 10px rgba(0,0,0,0.02);
+        }
+        
+        /* 數字立體感陰影 */
+        .number-shadow {
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center w-screen h-screen">
+
+    <!-- 主容器 (移除邊距，完全貼合父層，加入日曆邊框與紙張陰影) -->
+    <div class="relative flex flex-col w-full h-full max-w-md bg-white rounded-xl overflow-hidden border border-gray-200 paper-shadow">
+        
+        <!-- 日曆頂部 (紅色區塊，佔比 28%) -->
+        <div class="relative flex items-center justify-center h-[28%] w-full bg-red-600 border-b-2 border-red-700 shadow-sm z-10">
+            <!-- 模擬裝訂孔 -->
+            <div class="absolute -top-[1vh] left-[20%] w-[4vh] h-[4vh] bg-gray-100 rounded-full shadow-inner border border-gray-300"></div>
+            <div class="absolute -top-[1vh] right-[20%] w-[4vh] h-[4vh] bg-gray-100 rounded-full shadow-inner border border-gray-300"></div>
+            
+            <!-- 標題 -->
+            <h2 id="event-title" class="text-[11vh] font-black text-white tracking-widest drop-shadow-sm px-2 truncate leading-none mt-[1vh]">
+                校慶運動會
+            </h2>
+        </div>
+
+        <!-- 日曆主體 (白色區塊，佔比 72%) -->
+        <div id="display-panel" class="relative flex flex-col items-center justify-center h-[72%] w-full bg-gradient-to-b from-white to-gray-50 text-center">
+            
+            <!-- 巨大天數 (使用 vh 佔據最大視覺比例) -->
+            <div class="flex items-baseline justify-center w-full transform -translate-y-[2vh]">
+                <span id="days-count" class="text-[55vh] font-black text-gray-800 leading-[0.8] tracking-tighter number-shadow">
+                    0
+                </span>
+                <span class="text-[12vh] font-bold ml-[1vw] text-gray-400">天</span>
+            </div>
+
+            <!-- 底部日期 (絕對定位，貼齊底部) -->
+            <div class="absolute bottom-[3vh] w-full flex justify-center">
+                <span class="text-[7vh] font-bold text-gray-400 tracking-wider" id="target-date-text">
+                    2026/11/15
+                </span>
+            </div>
+        </div>
+
+        <!-- 右下角設定按鈕 (低調的淺灰色) -->
+        <button id="btn-settings" class="absolute bottom-[2vh] right-[2vw] z-20 p-[1vh] bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-600 rounded-full shadow-sm transition-all transform hover:scale-110 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-[8vh] w-[8vh]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </button>
+
+        <!-- 設定面板 (針對日曆風格調整顏色為紅灰配色) -->
+        <div id="setup-panel" class="absolute inset-0 bg-white/95 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-2 transition-transform duration-500 transform translate-y-full border-t-[1vh] border-red-600">
+            <h3 class="text-[12vh] font-black text-red-600 mb-[2vh]">設定活動</h3>
+            
+            <div class="w-full mb-[1vh] px-[2vw]">
+                <input type="text" id="input-title" value="校慶運動會" class="w-full text-center text-[10vh] font-bold bg-gray-50 rounded-md border border-gray-300 focus:border-red-500 focus:outline-none py-[1vh]" placeholder="活動名稱">
+            </div>
+            
+            <div class="w-full mb-[3vh] px-[2vw]">
+                <input type="date" id="input-date" class="w-full text-center text-[10vh] font-bold bg-gray-50 rounded-md border border-gray-300 focus:border-red-500 focus:outline-none py-[1vh]">
+            </div>
+            
+            <div class="flex space-x-[2vw] w-full px-[2vw]">
+                <button id="btn-cancel" class="flex-1 py-[2vh] bg-gray-200 hover:bg-gray-300 text-gray-700 text-[10vh] font-bold rounded-md transition-colors">
+                    取消
+                </button>
+                <button id="btn-save" class="flex-1 py-[2vh] bg-red-600 hover:bg-red-700 text-white text-[10vh] font-bold rounded-md shadow-sm transition-colors">
+                    儲存
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // DOM 元素
+        const setupPanel = document.getElementById('setup-panel');
+        const btnSettings = document.getElementById('btn-settings');
+        const btnSave = document.getElementById('btn-save');
+        const btnCancel = document.getElementById('btn-cancel');
+        
+        const elEventTitle = document.getElementById('event-title');
+        const elDaysCount = document.getElementById('days-count');
+        const elTargetDateText = document.getElementById('target-date-text');
+        
+        const inputTitle = document.getElementById('input-title');
+        const inputDate = document.getElementById('input-date');
+
+        // 預設資料
+        let currentTitle = "校慶運動會";
+        // 預設日期為 30 天後
+        let defaultDate = new Date();
+        defaultDate.setDate(defaultDate.getDate() + 30);
+        let targetDateObj = defaultDate;
+
+        // 初始化設定面板的日期 (格式 YYYY-MM-DD)
+        function formatDateForInput(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        inputDate.value = formatDateForInput(targetDateObj);
+
+        // 計算天數並更新畫面
+        function calculateAndUpdate() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const target = new Date(targetDateObj);
+            target.setHours(0, 0, 0, 0);
+
+            const diffTime = target - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            elEventTitle.textContent = currentTitle;
+            
+            // 恢復預設顏色
+            elDaysCount.classList.remove('text-red-600');
+            elDaysCount.classList.add('text-gray-800');
+            
+            if (diffDays > 0) {
+                elDaysCount.textContent = diffDays;
+            } else if (diffDays === 0) {
+                elDaysCount.textContent = "0";
+                // 日曆版：如果是今天，數字變成醒目的紅色
+                elDaysCount.classList.remove('text-gray-800');
+                elDaysCount.classList.add('text-red-600'); 
+                elEventTitle.textContent = currentTitle;
+            } else {
+                elDaysCount.textContent = "0";
+                elEventTitle.textContent = "已結束";
+            }
+
+            // 更新下方日期文字
+            const y = target.getFullYear();
+            const m = String(target.getMonth() + 1).padStart(2, '0');
+            const d = String(target.getDate()).padStart(2, '0');
+            elTargetDateText.textContent = `${y}/${m}/${d}`;
+        }
+
+        // 開啟/關閉設定面板
+        function toggleSetupPanel(show) {
+            if (show) {
+                setupPanel.classList.remove('translate-y-full');
+            } else {
+                setupPanel.classList.add('translate-y-full');
+            }
+        }
+
+        btnSettings.addEventListener('click', () => {
+            inputTitle.value = currentTitle;
+            inputDate.value = formatDateForInput(targetDateObj);
+            toggleSetupPanel(true);
+        });
+
+        btnCancel.addEventListener('click', () => {
+            toggleSetupPanel(false);
+        });
+
+        btnSave.addEventListener('click', () => {
+            if (!inputDate.value) {
+                alert("請選擇日期！");
+                return;
+            }
+            currentTitle = inputTitle.value || "重要活動";
+            targetDateObj = new Date(inputDate.value);
+            
+            calculateAndUpdate();
+            toggleSetupPanel(false);
+        });
+
+        // 檢查網址參數 (自動鎖定模式)
+        function checkUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            let hasParams = false;
+
+            if (params.has('date')) {
+                const paramDate = new Date(params.get('date'));
+                if (!isNaN(paramDate.getTime())) {
+                    targetDateObj = paramDate;
+                    hasParams = true;
+                }
+            }
+            if (params.has('title')) {
+                currentTitle = params.get('title');
+                hasParams = true;
+            }
+
+            if (hasParams) {
+                // 如果使用參數，隱藏右下角齒輪，防止訪客修改
+                btnSettings.style.display = 'none';
+            }
+            
+            // 更新畫面
+            calculateAndUpdate();
+        }
+
+        // 啟動
+        checkUrlParams();
+
+        // 每天凌晨自動更新天數
+        setInterval(() => {
+            const now = new Date();
+            if (now.getHours() === 0 && now.getMinutes() === 0 && now.getSeconds() === 0) {
+                calculateAndUpdate();
+            }
+        }, 1000);
+
+    </script>
+</body>
+</html>
